@@ -6,42 +6,77 @@ const Database = require('./conf/Database');
 const AuthenticationService = require('./services/mysql/AuthenticationService');
 const AuthenticationValidator = require('./validator/authentication');
 
+const products = require('./api/products');
+const ProductsService = require('./services/mysql/ProductsService');
+const ProductsValidator = require('./validator/products');
+
+const ClientError = require('./exceptions/ClientError');
+
 const init = async () => {
   const database = new Database();
-  const AthenticationService = new AuthenticationService(database);
+  const authenticationService = new AuthenticationService(database);
+  const productsService = new ProductsService(database);
 
-    const server = Hapi.server({
-      host: process.env.HOST,
-      port: process.env.PORT,
-      routes: {
-        cors: {
-          origin: ['*'],
-        },
+  const server = Hapi.server({
+    host: process.env.HOST,
+    port: process.env.PORT,
+    routes: {
+      cors: {
+        origin: ['*'],
       },
-    });
+    },
+  });
 
-    server.route({
-        method: 'GET',
-        path: '/',
-        handler: () => ({
-          name: 'Rski Mulud Muchamad',
-        }),
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: () => ({
+      name: 'Rski Mulud Muchamad',
+    }),
+  });
+
+  // defines external plugin
+  await server.register([
+    {
+      plugin: authentication,
+      options: {
+        service: authenticationService,
+        validator: AuthenticationValidator,
+      },
+    },
+
+    {
+      plugin: products,
+      options: {
+        service: productsService,
+        validator: ProductsValidator,
+      }
+    },
+  ]);
+
+  // extension
+  server.ext('onPreResponse', (request, h) => {
+    const {
+      response
+    } = request;
+
+    if (response instanceof ClientError) {
+      const newResponse = h.response({
+        status: 'fail',
+        message: response.message,
       });
+      newResponse.code(response.statusCode);
+      return newResponse;
+    }
 
-      // defines external plugin
-      await server.register([
-        {
-          plugin: authentication,
-          options: {
-            service: AuthenticationService,
-            validator: AuthenticationValidator,
-          },
-        },
-      ]);
-      
-      await server.start();
-      console.log(`Server running at ${server.info.uri}`);
-  
-  };
+    console.log(response);
 
-  init();
+    return h.continue;
+  });
+
+  await server.start();
+  console.log(`Server running at ${server.info.uri}`);
+
+};
+
+init();
