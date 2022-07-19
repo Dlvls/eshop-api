@@ -16,8 +16,9 @@ class ProductsHandler {
     async postProduct(request, h) {
         this.#validator.validateProductsPayload(request.payload);
         const { title, price, description } = request.payload;
+        const { id:userId } = request.auth.credentials;
     
-        const productId = await this.#service.addProduct(title, price, description);
+        const productId = await this.#service.addProduct(userId, title, price, description);
     
         const response = h.response({
           status: 'success',
@@ -60,8 +61,9 @@ class ProductsHandler {
         this.#validator.validateProductsPayload(request.payload);
         const { id } = request.params;
         const { title, price, description } = request.payload;
+        const { id: userId } = request.auth.credentials;
     
-        await this.#service.updateProductById(id, { title, price, description });
+        await this.#service.updateProductById(id, userId, { title, price, description });
     
         return {
           status: 'success',
@@ -71,8 +73,9 @@ class ProductsHandler {
     
       async deleteProductById(request, h) {
         const { id } = request.params;
+        const { id: userId } = request.auth.credentials;
     
-        await this.#service.deleteProductById(id);
+        await this.#service.deleteProductById(id, userId);
     
         return {
           status: 'success',
