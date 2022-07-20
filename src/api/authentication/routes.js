@@ -15,7 +15,11 @@ const routes = (handler) => [
         handler: handler.getUser,
         options: {
           auth: 'eshop_jwt',
+<<<<<<< HEAD
         }
+=======
+        },
+>>>>>>> 8abb78e (carts)
       },
 ];
 
