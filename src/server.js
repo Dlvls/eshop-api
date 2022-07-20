@@ -24,6 +24,16 @@ const CartsValidator = require('./validator/carts');
 const transactions = require('./api/transactions');
 const TransactionsService = require('./services/mysql/TransactionsService');
 
+// carts
+const carts = require('./api/carts');
+const CartsService = require('./services/mysql/CartsService');
+const CartsValidator = require('./validator/carts');
+
+// transactions
+const transactions = require('./api/transactions');
+const TransactionsService = require('./services/mysql/TransactionsService');
+
+
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {

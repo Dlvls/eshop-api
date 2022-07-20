@@ -44,12 +44,15 @@ class AuthenticationHandler {
     const payloadToken = { id, email}; // data yang ada di token
     const token = this.#generateToken(payloadToken);  // meng generate token
 
+    const payloadToken = { id, email}; // data yang ada di token
+    const token = this.#generateToken(payloadToken);  // meng generate token
+
     return {
       status: 'success',
       message: 'User berhasil login',
       data: {
         id,
-        token,
+        token, // mengembalikan response
       },
     };
   }
