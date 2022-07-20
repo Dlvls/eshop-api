@@ -17,6 +17,7 @@ const routes = (handler) => [
           auth: 'eshop_jwt',
         },
       },
+    },
 ];
 
 module.exports = routes;

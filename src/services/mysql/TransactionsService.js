@@ -1,3 +1,5 @@
+const {nanoid} = require('nanoid');
+
 class TransactionsService {
     #database;
   

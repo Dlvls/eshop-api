@@ -1,3 +1,6 @@
+const {nanoid} = require('nanoid');
+const NotFoundError = require('../../exceptions/NotFoundError');
+
 class ProductsService {
     #database;
   
@@ -5,7 +8,7 @@ class ProductsService {
       this.#database = database;
     }
 
-    async addProduct(title, price, description) {
+    async addProduct(userId, title, price, description) {
         const id = `product-${nanoid(16)}`
         const query = `INSERT INTO products (id, title, price, description, image)
           VALUES (
@@ -45,7 +48,7 @@ class ProductsService {
         return result[0];
       }
 
-      async updateProductById(id, {title, price, description}) {
+      async updateProductById(id, userId, {title, price, description}) {
         const queryProduct = `SELECT id FROM products WHERE id = '${id}'`;
     
         const product = await this.#database.query(queryProduct);
@@ -67,7 +70,7 @@ class ProductsService {
         }
       }
 
-      async deleteProductById(id) {
+      async deleteProductById(id, userId) {
         const query = `DELETE FROM products WHERE id = '${id}'`;
     
         const result = await this.#database.query(query);
@@ -75,6 +78,31 @@ class ProductsService {
         if (!result || result.length < 1 || result.affectedRows < 1) {
           throw new NotFoundError('Gagal menghapus produk, id tidak ditemukan');
         }
+      }
+
+      async updateProductImageById(id, filename) {
+        const oldFileName = await this.#database.query(
+            `SELECT image FROM products WHERE id = '${id}'`,
+        );
+    
+        const queryProduct = `SELECT id FROM products WHERE id = '${id}'`;
+    
+        const product = await this.#database.query(queryProduct);
+    
+        if (!product || product.length < 1 || product.affectedRows < 1) {
+          throw new NotFoundError('Produk tidak ditemukan');
+        }
+    
+        const query = `UPDATE products SET image = '${filename}' WHERE id = '${id}'`;
+    
+        const result = await this.#database.query(query);
+    
+        if (!result || result.length < 1 || result.affectedRows < 1) {
+          throw new InvariantError('Gambar produk gagal diperbarui');
+        }
+    
+        // method ini akan mengembalikan nama file yang lama
+        return oldFileName[0].image;
       }
   }
   

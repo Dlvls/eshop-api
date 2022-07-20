@@ -39,7 +39,10 @@ class AuthenticationHandler {
     this.#validator.validateLoginPayload(request.payload);
     const { email, password } = request.payload;
 
-    const { id } = await this.#service.login(email, password)
+    const { id } = await this.#service.login(email, password);
+
+    const payloadToken = { id, email}; // data yang ada di token
+    const token = this.#generateToken(payloadToken);  // meng generate token
 
     const payloadToken = { id, email}; // data yang ada di token
     const token = this.#generateToken(payloadToken);  // meng generate token

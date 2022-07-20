@@ -1,9 +1,13 @@
+const {nanoid} = require('nanoid');
+
 class ProductsHandler {
-    #service;
+    #productsService;
+    #storageService;
     #validator;
   
-    constructor(service, validator) {
-      this.#service = service;
+    constructor(productsService, storageService, validator) {
+      this.#productsService = productsService;
+      this.#storageService = storageService;
       this.#validator = validator;
   
       this.postProduct = this.postProduct.bind(this);
@@ -11,13 +15,15 @@ class ProductsHandler {
       this.getProductById = this.getProductById.bind(this);
       this.putProductById = this.putProductById.bind(this);
       this.deleteProductById = this.deleteProductById.bind(this);
+      this.putProductImageById = this.putProductImageById.bind(this);
     }
   
     async postProduct(request, h) {
         this.#validator.validateProductsPayload(request.payload);
         const { title, price, description } = request.payload;
+        const { id:userId } = request.auth.credentials;
     
-        const productId = await this.#service.addProduct(title, price, description);
+        const productId = await this.#productsService.addProduct(userId, title, price, description);
     
         const response = h.response({
           status: 'success',
@@ -31,7 +37,7 @@ class ProductsHandler {
       }
     
       async getProducts(request, h) {
-        const products = await this.#service.getAllProducts();
+        const products = await this.#productsService.getAllProducts();
     
         return {
           status: 'success',
@@ -45,7 +51,7 @@ class ProductsHandler {
       async getProductById(request, h) {
         const { id } = request.params;
     
-        const product = await this.#service.getProductById(id);
+        const product = await this.#productsService.getProductById(id);
     
         return {
           status: 'success',
@@ -60,8 +66,9 @@ class ProductsHandler {
         this.#validator.validateProductsPayload(request.payload);
         const { id } = request.params;
         const { title, price, description } = request.payload;
+        const { id: userId } = request.auth.credentials;
     
-        await this.#service.updateProductById(id, { title, price, description });
+        await this.#productsService.updateProductById(id, userId, { title, price, description });
     
         return {
           status: 'success',
@@ -71,12 +78,32 @@ class ProductsHandler {
     
       async deleteProductById(request, h) {
         const { id } = request.params;
+        const { id: userId } = request.auth.credentials;
     
-        await this.#service.deleteProductById(id);
+        await this.#productsService.deleteProductById(id, userId);
     
         return {
           status: 'success',
           message: 'Produk berhasil dihapus',
+        };
+      }
+
+      async putProductImageById(request, h) {
+        const { image } = request.payload;
+        const { id } = request.params;
+        this.#validator.validateProductImageHeader(image.hapi.headers);
+    
+        const nameId = `productImage-${nanoid(16)}`;
+        const filename = await this.#storageService.writeFile(image, image.hapi, nameId);
+        const oldFileName = await this.#productsService.updateProductImageById(id, filename);
+    
+        if (oldFileName != null) {
+          await this.#storageService.deleteFile(oldFileName);
+        }
+    
+        return {
+          status: 'success',
+          message: 'Gambar produk berhasil diperbarui',
         };
       }
   }
