@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
 
 const authentication = require('./api/authentication');
 const Database = require('./conf/Database');
@@ -11,6 +12,8 @@ const AuthenticationValidator = require('./validator/authentication');
 const products = require('./api/products');
 const ProductsService = require('./services/mysql/ProductsService');
 const ProductsValidator = require('./validator/products');
+const StorageService = require('./services/storage/StorageService');
+const path = require('path');
 
 // carts
 const carts = require('./api/carts');
@@ -21,7 +24,6 @@ const CartsValidator = require('./validator/carts');
 const transactions = require('./api/transactions');
 const TransactionsService = require('./services/mysql/TransactionsService');
 
-
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
@@ -31,6 +33,7 @@ const init = async () => {
   const productsService = new ProductsService(database);
   const cartsService = new CartsService(database);
   const transactionsService = new TransactionsService(database);
+  const storageService = new StorageService(path.resolve(__dirname + '/api/products/images'));
 
   const server = Hapi.server({
     host: process.env.HOST,
@@ -50,13 +53,13 @@ const init = async () => {
     }),
   });
 
-<<<<<<< HEAD
   // register external plugin
-=======
->>>>>>> 8abb78e (carts)
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -89,7 +92,8 @@ const init = async () => {
     {
       plugin: products,
       options: {
-        service: productsService,
+        productsService,
+        storageService,
         validator: ProductsValidator,
       }
     },

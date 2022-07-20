@@ -41,9 +41,6 @@ class AuthenticationHandler {
 
     const { id } = await this.#service.login(email, password);
 
-    const payloadToken = { id, email };
-    const token = this.#generateToken(payloadToken);
-
     const payloadToken = { id, email}; // data yang ada di token
     const token = this.#generateToken(payloadToken);  // meng generate token
 
@@ -52,11 +49,7 @@ class AuthenticationHandler {
       message: 'User berhasil login',
       data: {
         id,
-<<<<<<< HEAD
         token,
-=======
-        token, // mengembalikan response
->>>>>>> 8abb78e (carts)
       },
     };
   }

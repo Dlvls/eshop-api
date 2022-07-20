@@ -9,11 +9,13 @@ const routes = (handler) => [
       auth: 'eshop_jwt',
     },
   },
+
   {
     method: 'GET',
     path: '/products',
     handler: handler.getProducts,
   },
+
   {
     method: 'GET',
     path: '/products/{id}',
@@ -22,6 +24,7 @@ const routes = (handler) => [
       auth: 'eshop_jwt',
     },
   },
+
   {
     method: 'PUT',
     path: '/products/{id}',
@@ -30,6 +33,7 @@ const routes = (handler) => [
       auth: 'eshop_jwt',
     },
   },
+
   {
     method: 'DELETE',
     path: '/products/{id}',
@@ -38,6 +42,32 @@ const routes = (handler) => [
       auth: 'eshop_jwt',
     },
   },
+
+  {
+    method: 'PUT',
+    path: '/products/{id}/image',
+    handler: handler.putProductImageById,
+    options: {
+      auth: 'eshop_jwt',
+      payload: {
+        allow: 'multipart/form-data',
+        multipart: true,
+        output: 'stream',
+        maxBytes: 512000,
+      },
+    },
+  },
+
+  {
+    method: 'GET',
+    path: '/products/image/{param*}',
+    handler: {
+      directory: {
+        path: path.resolve(__dirname, 'images')
+      },
+    },
+  },
+
 ];
 
 module.exports = routes;
